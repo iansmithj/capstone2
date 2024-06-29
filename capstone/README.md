@@ -3,9 +3,9 @@
 Congratulations—you've landed a job with TEnmo, whose product is an online payment service for transferring "TE bucks" between friends. However, they don't have a product yet. You've been tasked with writing the backend, a RESTful API server.
 
 ## Authentication
-The user registration and authentication functionality for the system has already been implemented. If you review the login code, you'll notice that after successful authentication, an instance of `AuthenticatedUser` is stored in the `currentUser` member variable of `App`. The user's authorization token (i.e JWT) can be accessed from `App` as `currentUser.getToken()`.
+The user registration and authentication functionality for the system has already been implemented. If you review the login code, you'll notice that after successful authentication, an instance of `LoginResponseDto` is returned to the caller.
 
-When the use cases refer to an "authenticated user", this means a request that includes the token as a header. You can also reference other information about the current user by using the `User` object retrieved from `currentUser.getUser()`.
+**Hint**: When the use cases refer to an "authenticated user", this means a request that includes the token as a header. You can access the authenticated caller by having the `Principal` injected into the request handler.
 
 ## Application Use Cases
 These use cases are written from the user's perspective. the API being built must provide the capabilities
@@ -42,6 +42,7 @@ necessary to support them.
    3. If the transfer is approved, the requestee's account balance is decreased by the amount of the request.
    4. If the transfer is rejected, no account balance changes.
 
+**Make sure that you implement all appropriate authorization checks! A data breach would ruin the company.**
 
 ## Database schema
 
