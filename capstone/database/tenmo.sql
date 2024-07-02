@@ -14,6 +14,14 @@ CREATE TABLE tenmo_user (
 	role varchar(20),
 	CONSTRAINT PK_tenmo_user PRIMARY KEY (user_id),
 	CONSTRAINT UQ_username UNIQUE (username)
-);
+	
+	
+	CREATE TABLE accounts(
+	account_number int NOT NULL SERIAL)
+	user_id int NOT NULL
+	balance int NOT NULL
+
+	CONSTRAINT PK_accounts PRIMARY KEY (account_number),
+    CONSTRAINT FK );
 
 
