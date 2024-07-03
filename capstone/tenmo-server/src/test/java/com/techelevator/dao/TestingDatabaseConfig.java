@@ -55,7 +55,7 @@ public class TestingDatabaseConfig {
         dataSource.setAutoCommit(false); //So we can rollback after each test.
 
         ScriptUtils.executeSqlScript(dataSource.getConnection(), new ClassPathResource("test-data.sql"));
-
+        dataSource.getConnection().commit();
         return dataSource;
     }
 

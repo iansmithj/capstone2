@@ -1,29 +1,34 @@
 package com.techelevator.tenmo.model;
 
-import java.math.BigDecimal;
+
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 public class Transfers {
     private int transfer_id;
     private int deposit_account_id;
     private int withdraw_account_id;
+    private int type_id;
+    private LocalDateTime transfer_date_time;
 
-    private LocalTime transfer_time;
-    private LocalDate transfer_date;
+    private double amount_transfered;
 
-    private BigDecimal amount_transfered;
+    private int status_id;
+     public Transfers(){}
 
-    private String status;
 
-    public Transfers(int transfer_id, int deposit_account_id, int withdraw_account_id, LocalTime transfer_time, LocalDate transfer_date, BigDecimal amount_transfered, String status) {
+
+
+
+    public Transfers(int transfer_id, int type_id, int deposit_account_id, int withdraw_account_id, LocalDateTime transfer_date_time, double amount_transfered, int status_id) {
         this.transfer_id = transfer_id;
         this.deposit_account_id = deposit_account_id;
         this.withdraw_account_id = withdraw_account_id;
-        this.transfer_time = transfer_time;
-        this.transfer_date = transfer_date;
+        this.transfer_date_time = transfer_date_time;
         this.amount_transfered = amount_transfered;
-        this.status = status;
+        this.status_id = status_id;
+        this.type_id = type_id;
     }
 
     public void setTransfer_id(int transfer_id) {
@@ -37,25 +42,22 @@ public class Transfers {
     public void setWithdraw_account_id(int withdraw_account_id) {
         this.withdraw_account_id = withdraw_account_id;
     }
-
-    public void setTransfer_time(LocalTime transfer_time) {
-        this.transfer_time = transfer_time;
-    }
-
-    public void setTransfer_date(LocalDate transfer_date) {
-        this.transfer_date = transfer_date;
-    }
-
-    public void setAmount_transfered(BigDecimal amount_transfered) {
+    public void setAmount_transfered(double amount_transfered) {
         this.amount_transfered = amount_transfered;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setStatus_id(int status_id) {
+        this.status_id = status_id;
     }
 
     public int getTransfer_id() {
-        return transfer_id;
+         return transfer_id;
+    }
+    public int getType_id() {
+        return type_id;
+    }
+    public void setType_id(int type_id) {
+        this.type_id = type_id;
     }
 
     public int getDeposit_account_id() {
@@ -66,20 +68,20 @@ public class Transfers {
         return withdraw_account_id;
     }
 
-    public LocalTime getTransfer_time() {
-        return transfer_time;
+    public void setTransfer_date_time(LocalDateTime transfer_date_time) {
+        this.transfer_date_time = transfer_date_time;
     }
 
-    public LocalDate getTransfer_date() {
-        return transfer_date;
+    public LocalDateTime getTransfer_date_time() {
+        return transfer_date_time;
     }
 
-    public BigDecimal getAmount_transfered() {
+    public double getAmount_transfered() {
         return amount_transfered;
     }
 
-    public String getStatus() {
-        return status;
+    public int getStatus_id() {
+        return status_id;
     }
 
 

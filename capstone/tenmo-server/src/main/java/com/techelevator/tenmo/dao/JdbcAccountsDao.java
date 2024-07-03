@@ -1,72 +1,71 @@
 package com.techelevator.tenmo.dao;
 
 import com.techelevator.tenmo.exception.DaoException;
-import com.techelevator.tenmo.model.Accounts;
+import com.techelevator.tenmo.model.Account;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
+import javax.sql.DataSource;
+
+
 
 @Component
-public class JdbcAccountsDao implements AccountsDao {
+public class JdbcAccountsDao implements AccountDao {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public JdbcAccountsDao(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    private final String SELECT_ACCOUNT = "SELECT a.account_id, a.user_id, a.balance FROM accounts a";
+
+    public JdbcAccountsDao(DataSource dataSource) {
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
-    public Accounts getAccountById(int id) {
-        Accounts accounts = null;
-        String sql = "SELECT account_id, user_id, balance " +
-                "FROM accounts WHERE account_id = ?";
+    public Account getAccountById(int user_id) {
+        Account account = null;
+        String sql = SELECT_ACCOUNT + "WHERE user_id = ?;";
         try {
-            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, id);
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, user_id);
             if (results.next()) {
-                accounts = mapRowToAccounts(results);
+                account = mapRowToAccounts(results);
             }
         } catch (CannotGetJdbcConnectionException e) {
             throw new DaoException("Unable to connect to server or database", e);
         }
-        return accounts;
+        return account;
     }
 
-    @Override
-    public Accounts getAccountsByUserId(int id) {
 
-        Accounts accounts = null;
-        String sql = "SELECT account_id, user_id, balance " +
-                "FROM accounts WHERE user_id = ?";
+        @Override
+    public Account updatedbalance(Account account) {
+        Account updatedAccount = null;
+        String sql = "START TRANSACTION; UPDATE account SET balance = balance - ? WHERE account_id  IN (SELECT withdraw_id FROM transfer WHERE withdraw_id =?);" +
+                "UPDATE account SET balance = balance + ? WHERE account_id IN (SELECT deposit_id FROM transfer WHERE deposit_id =?);COMMIT;";
         try {
-            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, id);
-            if (results.next()) {
-                accounts = mapRowToAccounts(results);
+            int numberOfRowsAffected = jdbcTemplate.update(sql,updatedAccount.getBalance()
+            if (numberOfRowsAffected == 0) {
+                throw new DaoException("Zero rows affected, expected at least one");
+            } else {
+                account = updatedbalance(account.getUser_id());
             }
         } catch (CannotGetJdbcConnectionException e) {
             throw new DaoException("Unable to connect to server or database", e);
+        } catch (DataIntegrityViolationException e) {
+            throw new DaoException("Data integrity violation", e);
         }
-        return accounts;
+
+        return updatedAccount;
     }
 
-    @Override
-    public Accounts getBalance(BigDecimal balance) {
-return null;
-    }
 
-        //        Accounts accounts = null;
-//        String sql = "SELECT account_id, user_id, balance " +
-//                "FROM accounts WHERE account_id";
-//
-//    }
-
-    private Accounts mapRowToAccounts(SqlRowSet results) {
-        Accounts accounts = new Accounts();
-        accounts.setAccountId(results.getInt("account_id"));
-        accounts.setUser_id(Integer.parseInt(results.getString("user_id")));
-        accounts.setBalance(results.getBigDecimal("balance"));
-        return accounts;
+    private Account mapRowToAccounts(SqlRowSet results) {
+        Account account = new Account();
+        account.setAccountId(results.getInt("account_id"));
+        account.setUser_id(results.getInt("user_id"));
+        account.setBalance(results.getDouble("balance"));
+        return account;
 
     }
 
