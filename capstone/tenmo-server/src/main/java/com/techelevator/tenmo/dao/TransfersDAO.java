@@ -11,4 +11,6 @@ public interface TransfersDAO {
     Transfers createTransfer(Transfers transfers);
 
     Transfers getTransferById(int id);
+
+    Transfers getUsersPendingTransfers(int id);
 }

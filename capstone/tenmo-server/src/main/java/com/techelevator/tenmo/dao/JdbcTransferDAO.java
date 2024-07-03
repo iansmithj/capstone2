@@ -37,7 +37,27 @@ public class JdbcTransferDAO implements TransfersDAO {
 
         return allTransfers;
     }
+
     @Override
+    public Transfers getUsersPendingTransfers(int id) {
+        List<Transfers> allTransfers = new ArrayList<>();
+        String sql = "SELECT transfer_id, type_id, status_id, deposit_id, withdraw_id, transfer_date_time, amount_transferred" +
+                "FROM transfer WHERE deposit_id = ?;";
+        try{
+
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, id);
+            while (results.next()) {
+                Transfers transfersResult = mapRowToTransfer(results);
+                allTransfers.add(transfersResult);
+            }
+        } catch (CannotGetJdbcConnectionException e) {
+            throw new DaoException("Unable to connect to server or database", e);
+        }
+
+        return allTransfers;
+    }
+
+    @Override // ask questions about this
     public Transfers createTransfer(Transfers transfers) {
         Transfers createdTransfer = null;
         final String sql = "INSERT INTO transfer(  type_id, status_id, deposit_id, withdraw_id, transfer_date_time, amount_transferred)"+

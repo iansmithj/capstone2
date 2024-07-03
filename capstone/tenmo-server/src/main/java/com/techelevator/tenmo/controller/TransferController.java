@@ -23,6 +23,7 @@ public class TransferController {
     @RequestMapping(path = "/{id}", method = RequestMethod.GET)
    public List<Transfers> getAllTransfersById (@PathVariable int id) {
          return transfersDAO.allOfUsersTransfers(id);
+
     }
 
     @ResponseStatus (HttpStatus.CREATED)
@@ -35,6 +36,7 @@ public class TransferController {
     @RequestMapping(path = "/{id}", method = RequestMethod.GET)
     public Transfers transfersById (@PathVariable int id) {
         return transfersDAO.getTransferById(id);
+
     }
 
 
