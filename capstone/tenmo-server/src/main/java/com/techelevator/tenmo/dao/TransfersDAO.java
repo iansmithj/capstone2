@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface TransfersDAO {
 
-    List<Transfers> AllOfUsersTransfers(int id);
+    List<Transfers> allOfUsersTransfers(int id);
 
     Transfers createTransfer(Transfers transfers);
 

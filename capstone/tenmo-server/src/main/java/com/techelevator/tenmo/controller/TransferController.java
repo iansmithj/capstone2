@@ -4,12 +4,10 @@ package com.techelevator.tenmo.controller;
 import com.techelevator.tenmo.dao.TransfersDAO;
 import com.techelevator.tenmo.model.Transfers;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -21,18 +19,23 @@ public class TransferController {
     public TransferController(TransfersDAO transfersDAO) {
         this.transfersDAO = transfersDAO;
     }
-    @RequestMapping(path = , method = RequestMethod.GET)
-    public List<Transfers> list() {
-        return transfersDAO.();
+
+    @RequestMapping(path = "/{id}", method = RequestMethod.GET)
+   public List<Transfers> getAllTransfersById (@PathVariable int id) {
+         return transfersDAO.allOfUsersTransfers(id);
+    }
+
+    @ResponseStatus (HttpStatus.CREATED)
+    @RequestMapping(path = "", method = RequestMethod.POST)
+        public Transfers add(@Valid @RequestBody Transfers transfers) {
+        return transfersDAO.createTransfer(transfers);
+
     }
 
     @RequestMapping(path = "/{id}", method = RequestMethod.GET)
-    public Transfers get(@PathVariable int transfer_id) {
-        Transfers transfers =transfersDAO.getTransferById(transfer_id);
-        if (transfers== null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Transfer not found");
-        } else {
-            return transfers;
-        }
+    public Transfers transfersById (@PathVariable int id) {
+        return transfersDAO.getTransferById(id);
     }
+
+
 }

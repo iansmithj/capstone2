@@ -6,6 +6,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.sql.DataSource;
 import java.util.ArrayList;
@@ -17,9 +19,8 @@ public class JdbcTransferDAO implements TransfersDAO {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
-
     @Override
-    public List<Transfers> AllOfUsersTransfers(int id) {
+    public List<Transfers> allOfUsersTransfers(int id) {
         List<Transfers> allTransfers = new ArrayList<>();
         String sql = "SELECT transfer_id, type_id, status_id, deposit_id, withdraw_id, transfer_date_time, amount_transferred" +
         "FROM public.transfer WHERE withdraw_id = ? OR deposit_id = ?;";

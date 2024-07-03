@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface TransferStatusDAO {
 
-    List <TransferStatus> listTrasfersByPanding(String status);
+    List <TransferStatus> listTransfersByPending(String status);
 
     TransferStatus getTransferByApproved(String status);
     TransferStatus getTransferByRejected(String status);
