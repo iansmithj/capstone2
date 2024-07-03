@@ -38,17 +38,17 @@ public class JdbcAccountsDao implements AccountDao {
     }
 
 
-        @Override
+        @Override                           // how to generate a transaction in transfer table
     public Account updatedbalance(Account account) {
         Account updatedAccount = null;
         String sql = "START TRANSACTION; UPDATE account SET balance = balance - ? WHERE account_id  IN (SELECT withdraw_id FROM transfer WHERE withdraw_id =?);" +
                 "UPDATE account SET balance = balance + ? WHERE account_id IN (SELECT deposit_id FROM transfer WHERE deposit_id =?);COMMIT;";
         try {
-            int numberOfRowsAffected = jdbcTemplate.update(sql,updatedAccount.getBalance()
+            int numberOfRowsAffected = jdbcTemplate.update(sql,updatedAccount.getBalance());
             if (numberOfRowsAffected == 0) {
                 throw new DaoException("Zero rows affected, expected at least one");
             } else {
-                account = updatedbalance(account.getUser_id());
+                updatedAccount = getAccountById(account.getUser_id());
             }
         } catch (CannotGetJdbcConnectionException e) {
             throw new DaoException("Unable to connect to server or database", e);
