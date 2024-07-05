@@ -11,6 +11,11 @@ public interface TransfersDAO {
     Transfers createTransfer(Transfers transfers);
 
     Transfers getTransferById(int id);
+    List <Transfers> getTransferByStatusPending();
+    Transfers updateTransferStatusToApproved(Transfers transfers);
 
-    Transfers getUsersPendingTransfers(int id);
+
 }
+
+
+

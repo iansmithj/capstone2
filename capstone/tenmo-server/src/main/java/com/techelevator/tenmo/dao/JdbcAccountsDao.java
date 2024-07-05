@@ -23,7 +23,7 @@ public class JdbcAccountsDao implements AccountDao {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
-    public Account getAccountById(int user_id) {
+    public Account getAccountByUserId(int user_id) {
         Account account = null;
         String sql = SELECT_ACCOUNT + "WHERE user_id = ?;";
         try {
@@ -38,17 +38,17 @@ public class JdbcAccountsDao implements AccountDao {
     }
 
 
-        @Override                           // how to generate a transaction in transfer table
-    public Account updatedbalance(Account account) {
+        @Override
+        public Account moveMoney(double amountToTransfer, int withdraw_id, int deposit_id) {
         Account updatedAccount = null;
-        String sql = "START TRANSACTION; UPDATE account SET balance = balance - ? WHERE account_id  IN (SELECT withdraw_id FROM transfer WHERE withdraw_id =?);" +
-                "UPDATE account SET balance = balance + ? WHERE account_id IN (SELECT deposit_id FROM transfer WHERE deposit_id =?);COMMIT;";
+        String sql = " UPDATE account SET balance = balance - ? WHERE account_id  IN (SELECT withdraw_id FROM transfer WHERE withdraw_id =?);" +
+                "UPDATE account SET balance = balance + ? WHERE account_id IN (SELECT deposit_id FROM transfer WHERE deposit_id =?);";
         try {
-            int numberOfRowsAffected = jdbcTemplate.update(sql,updatedAccount.getBalance());
+            int numberOfRowsAffected = jdbcTemplate.update(sql,amountToTransfer, withdraw_id,amountToTransfer,deposit_id);
             if (numberOfRowsAffected == 0) {
                 throw new DaoException("Zero rows affected, expected at least one");
             } else {
-                updatedAccount = getAccountById(account.getUser_id());
+                updatedAccount = getAccountByUserId(updatedAccount.getAccountId());
             }
         } catch (CannotGetJdbcConnectionException e) {
             throw new DaoException("Unable to connect to server or database", e);
@@ -62,9 +62,8 @@ public class JdbcAccountsDao implements AccountDao {
 
     private Account mapRowToAccounts(SqlRowSet results) {
         Account account = new Account();
-        account.setAccountId(results.getInt("account_id"));
         account.setUser_id(results.getInt("user_id"));
-        account.setBalance(results.getDouble("balance"));
+        account.setBalance(results.getBigDecimal("balance"));
         return account;
 
     }
