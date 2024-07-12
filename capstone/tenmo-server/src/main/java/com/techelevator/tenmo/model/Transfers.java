@@ -13,18 +13,18 @@ public class Transfers {
     private int type_id;
     private LocalDateTime transfer_date_time;
 
-    private BigDecimal amount_transfered;
+    private BigDecimal amount_transferred;
 
     private int status_id;
      public Transfers(){}
 
-    public Transfers(int transfer_id, int deposit_account_id, int withdraw_account_id, int type_id, LocalDateTime transfer_date_time, BigDecimal amount_transfered, int status_id) {
+    public Transfers(int transfer_id, int deposit_account_id, int withdraw_account_id, int type_id, LocalDateTime transfer_date_time, BigDecimal amount_transferred, int status_id) {
         this.transfer_id = transfer_id;
         this.deposit_account_id = deposit_account_id;
         this.withdraw_account_id = withdraw_account_id;
         this.type_id = type_id;
         this.transfer_date_time = transfer_date_time;
-        this.amount_transfered = amount_transfered;
+        this.amount_transferred = amount_transferred;
         this.status_id = status_id;
     }
 
@@ -71,12 +71,12 @@ public class Transfers {
         this.transfer_date_time = transfer_date_time;
     }
 
-    public BigDecimal getAmount_transfered() {
-        return amount_transfered;
+    public BigDecimal getAmount_transferred() {
+        return amount_transferred;
     }
 
-    public void setAmount_transfered(BigDecimal amount_transfered) {
-        this.amount_transfered = amount_transfered;
+    public void setAmount_transferred(BigDecimal amount_transferred) {
+        this.amount_transferred = amount_transferred;
     }
 
     public int getStatus_id() {

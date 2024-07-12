@@ -2,6 +2,7 @@ package com.techelevator.tenmo.dao;
 
 import com.techelevator.tenmo.exception.DaoException;
 import com.techelevator.tenmo.model.Account;
+import com.techelevator.tenmo.model.TransferDTO;
 import com.techelevator.tenmo.model.Transfers;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
@@ -11,6 +12,9 @@ import org.springframework.stereotype.Component;
 
 
 import javax.sql.DataSource;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,15 +24,17 @@ public class JdbcTransferDAO implements TransfersDAO {
     public JdbcTransferDAO(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
+    private final String SELECT_TRANSFER = " SELECT t.transfer_id, t.type_id, t.status_id, t.deposit_id, t.withdraw_id, t.transfer_date_time, t.amount_transferred FROM transfer t ";
 
-    @Override
-    public List<Transfers> allOfUsersTransfers(int id) {
+    @Override   // 5. As an authenticated user of the system, I need to be able to see transfers I have sent or received.
+    public List<Transfers> getTransfersByUserId(int id) {
         List<Transfers> allTransfers = new ArrayList<>();
-        String sql = "SELECT transfer_id, type_id, status_id, deposit_id, withdraw_id, transfer_date_time, amount_transferred" +
-        "FROM public.transfer WHERE withdraw_id = ? OR deposit_id = ?;";
+        String sql = SELECT_TRANSFER +
+        "WHERE deposit_id IN (SELECT account_id FROM account WHERE user_id = ?) " +
+        "OR withdraw_id IN (SELECT account_id FROM account WHERE user_id = ?); ";
         try{
 
-            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, id);
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, id, id);
             while (results.next()) {
                 Transfers transfersResult = mapRowToTransfer(results);
                 allTransfers.add(transfersResult);
@@ -39,6 +45,7 @@ public class JdbcTransferDAO implements TransfersDAO {
 
         return allTransfers;
     }
+
 
 //    @Override
 //    public Transfers getUsersPendingTransfers(int id) { //askjdhcjgehdwkaudhukdhuekdhcuewdhiuwhewudhew
@@ -59,18 +66,18 @@ public class JdbcTransferDAO implements TransfersDAO {
 //        return null;
 //    }
     @Override
-    public Transfers createTransfer(Transfers transfers) {
+    public Transfers createTransfer(TransferDTO transferDTO, int status, int type) {
         Transfers createdTransfer = null;
-        final String sql = "INSERT INTO transfer(  type_id, status_id, deposit_id, withdraw_id, transfer_date_time, amount_transferred)"+
+        final String sql = "INSERT INTO transfer(  type_id, status_id, deposit_id, withdraw_id, transfer_date_time, amount_transferred) " +
                 "VALUES (?, ?, ?, ?, ?, ?) RETURNING transfer_id;";
         try{
-            final int newTransfer_id = jdbcTemplate.queryForObject(sql, int.class,
-                    transfers.getType_id(),
-                    transfers.getStatus_id(),
-                    transfers.getDeposit_account_id(),
-                    transfers.getWithdraw_account_id(),
-                    transfers.getTransfer_date_time(),
-                    transfers.getAmount_transfered());
+             int newTransfer_id = jdbcTemplate.queryForObject(sql, int.class,
+                    type,
+                    status,
+                    transferDTO.getUserTo(),
+                    transferDTO.getUserFrom(),
+                    LocalDateTime.now(),
+                     transferDTO.getAmount());
             createdTransfer = this.getTransferById(newTransfer_id);
         } catch (CannotGetJdbcConnectionException e) {
             throw new DaoException("Unable to connect to server or database", e);
@@ -86,8 +93,8 @@ public class JdbcTransferDAO implements TransfersDAO {
     @Override
     public Transfers getTransferById(int id) {
             Transfers transfers = null;
-            String sql = "SELECT transfer_id, type_id, status_id, deposit_id, withdraw_id, transfer_date_time, amount_transferred"+
-                         "FROM transfer WHERE transfer_id = ?;";
+            String sql = SELECT_TRANSFER +
+                         "WHERE transfer_id = ?;";
         try{
 
                 SqlRowSet results = jdbcTemplate.queryForRowSet(sql, id);
@@ -102,12 +109,19 @@ public class JdbcTransferDAO implements TransfersDAO {
         }
 
         @Override
-        public List<Transfers> getTransferByStatusPending(){////rgrggregrgergegregregegr
+        public List<Transfers> getUsersPendingtransfers(int id){
         List<Transfers> transfers = new ArrayList<>();
-        String sql = "SELECT * FROM transfer WHERE status_id IN (SELECT status_id FROM transfer_status = Pending;";
+        String sql = SELECT_TRANSFER +
+            "JOIN transfer_status ON t.status_id = transfer_status.status_id " +
+            "WHERE transfer_status.status = 'Pending' " +
+            "AND ( deposit_id IN (SELECT account_id FROM account WHERE user_id = ?) " +
+                "OR withdraw_id IN (SELECT account_id FROM account WHERE user_id = ?)); ";
         try{
-            SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
-            transfers.add(mapRowToTransfer(results));
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, id, id);
+            while (results.next()) {
+                Transfers transfersResult = mapRowToTransfer(results);
+                transfers.add(transfersResult);
+            }
         }catch (CannotGetJdbcConnectionException e){
             throw  new DaoException("Unable to connect to server");
         }
@@ -143,8 +157,28 @@ public class JdbcTransferDAO implements TransfersDAO {
         transfers.setDeposit_account_id(results.getInt("deposit_id"));
         transfers.setWithdraw_account_id(results.getInt("withdraw_id"));
         transfers.setTransfer_date_time(results.getTimestamp("transfer_date_time").toLocalDateTime());
-        transfers.setAmount_transfered(results.getBigDecimal("amount_transferred"));
+        transfers.setAmount_transferred(results.getBigDecimal("amount_transferred"));
 
         return transfers;
     }
+    //    @Override
+//    public Transfers moveMoney(BigDecimal amountToTransfer, int withdraw_id, int deposit_id) {
+//        Transfers updatedAccount = null;
+//        String sql = " UPDATE account SET balance = balance - ? WHERE account_id  IN (SELECT withdraw_id FROM transfer WHERE withdraw_id =?);" +
+//                "UPDATE account SET balance = balance + ? WHERE account_id IN (SELECT deposit_id FROM transfer WHERE deposit_id =?);";
+//        try {
+//            int numberOfRowsAffected = jdbcTemplate.update(sql,amountToTransfer, withdraw_id,amountToTransfer,deposit_id);
+//            if (numberOfRowsAffected == 0) {
+//                throw new DaoException("Zero rows affected, expected at least one");
+//            } else {
+//                updatedAccount = getTransfersByUserId());
+//            }
+//        } catch (CannotGetJdbcConnectionException e) {
+//            throw new DaoException("Unable to connect to server or database", e);
+//        } catch (DataIntegrityViolationException e) {
+//            throw new DaoException("Data integrity violation", e);
+//        }
+//
+//        return updatedAccount;
+//    }
 }

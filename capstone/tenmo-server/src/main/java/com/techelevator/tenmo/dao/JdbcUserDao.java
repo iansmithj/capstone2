@@ -10,7 +10,7 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,12 +73,13 @@ public class JdbcUserDao implements UserDao {
     @Override
     public User createUser(RegisterUserDto user) {
         User newUser = null;
-        // create user
         String sql = "INSERT INTO tenmo_user (username, password_hash) VALUES (LOWER(TRIM(?)), ?) RETURNING user_id";
         String password_hash = new BCryptPasswordEncoder().encode(user.getPassword());
         try {
             int newUserId = jdbcTemplate.queryForObject(sql, int.class, user.getUsername(), password_hash);
             newUser = getUserById(newUserId);
+            String sql1 = "INSERT INTO account (user_id ,balance ) VALUES (?, 1000.00 ); ";
+            jdbcTemplate.update(sql1, newUserId);
         } catch (CannotGetJdbcConnectionException e) {
             throw new DaoException("Unable to connect to server or database", e);
         } catch (DataIntegrityViolationException e) {
